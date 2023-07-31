@@ -13,10 +13,9 @@ var staticContent embed.FS
 
 func main() {
 	app := fiber.New()
+	api := fiber.New()
+	app.Mount("/api", api)
 
-	app.Get("/api", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
 	//gofiber static files from embed
 	app.Use("/", filesystem.New(filesystem.Config{
 		Root:       http.FS(staticContent),
@@ -24,5 +23,9 @@ func main() {
 		Browse:     true,
 	}))
 
-	app.Listen(":3000")
+	api.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello, World!")
+	})
+
+	app.Listen(":80")
 }
