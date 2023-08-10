@@ -17,11 +17,6 @@ import (
 //go:embed static/*
 var staticContent embed.FS
 
-type PluginInfoType struct {
-	Name    string
-	Version string
-}
-
 func main() {
 	app := fiber.New()
 	api := fiber.New()
@@ -38,6 +33,7 @@ func main() {
 		return c.SendString("Hello, World!")
 	})
 
+	actions := map[string][](func() interface{}){}
 	// scan plugins directory for .so files
 	err := filepath.Walk("../build", func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
@@ -58,17 +54,37 @@ func main() {
 			fmt.Println("Plugin name:", info["name"])
 			fmt.Println("Plugin version:", info["version"])
 
-			PluginInit, err := lookUpSymbol[func()](p, "PluginInit")
+			PluginInit, err := lookUpSymbol[func(map[string][](func() interface{})) map[string][](func() interface{})](p, "PluginInit")
 			if err != nil {
 				return err
 			}
-			(*PluginInit)()
+			actions = (*PluginInit)(actions)
+			return nil
 		}
 		return nil
 	})
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
+	}
+	for action, hooks := range actions {
+		for _, hook := range hooks {
+			if action == "routes" {
+				routes := hook().(map[string]interface{})
+				for path, handler := range routes {
+					api.Get(path, func(c *fiber.Ctx) error {
+						// this does not work
+						// result, ok := handler.(func(c *fiber.Ctx) error)
+						result, ok := handler.(func() string)
+						if !ok {
+							return c.SendString("error from plugin")
+						}
+						return c.SendString(result())
+					})
+					fmt.Println("final action hook: ", action, "path", path)
+				}
+			}
+		}
 	}
 
 	app.Listen(":80")
