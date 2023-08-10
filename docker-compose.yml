@@ -13,7 +13,12 @@ services:
     volumes:
       - ./frontend:/app
   
-  go:
-    build: .
+  core:
+    build: ./core
+    volumes:
+      - ./:/app
+  
+  example-plugin:
+    build: ./packages/example-plugin
     volumes:
       - ./:/app

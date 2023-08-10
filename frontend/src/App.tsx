@@ -1,11 +1,10 @@
-import type { Component } from 'solid-js';
 
-const App: Component = () => {
+function App() {
   return (
     <div>
-      work in progress
+      work in progress2
     </div>
   );
-};
+}
 
 export default App;
