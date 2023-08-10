@@ -70,17 +70,9 @@ func main() {
 	for action, hooks := range actions {
 		for _, hook := range hooks {
 			if action == "routes" {
-				routes := hook().(map[string]interface{})
+				routes := hook().(map[string]func(c *fiber.Ctx) error)
 				for path, handler := range routes {
-					api.Get(path, func(c *fiber.Ctx) error {
-						// this does not work
-						// result, ok := handler.(func(c *fiber.Ctx) error)
-						result, ok := handler.(func() string)
-						if !ok {
-							return c.SendString("error from plugin")
-						}
-						return c.SendString(result())
-					})
+					api.Get(path, handler)
 					fmt.Println("final action hook: ", action, "path", path)
 				}
 			}

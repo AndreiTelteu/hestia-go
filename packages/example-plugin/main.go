@@ -15,7 +15,6 @@ func PluginRegister() map[string]string {
 
 func PluginInit(actions map[string][](func() interface{})) map[string][](func() interface{}) {
 	fmt.Println("Hello, World! from plugin 4")
-	// actions := map[string][](func() interface{}){}
 
 	addAction := func(name string, action func() interface{}) {
 		if _, ok := actions[name]; !ok {
@@ -26,8 +25,9 @@ func PluginInit(actions map[string][](func() interface{})) map[string][](func() 
 
 	addAction("routes", func() interface{} {
 		return map[string]func(c *fiber.Ctx) error{
-			"plugin": func(c *fiber.Ctx) error {
-				return c.SendString("hello from plugin !")
+			"/plugin": func(c *fiber.Ctx) error {
+				ip := c.IP()
+				return c.SendString(fmt.Sprintf("hello from plugin2 ! IP=%s", ip))
 			},
 		}
 	})
