@@ -6,6 +6,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// //go:embed static/*
+// var staticContent embed.FS
+
 func PluginRegister() map[string]string {
 	return map[string]string{
 		"name":    "example-plugin",
@@ -24,8 +27,10 @@ func PluginInit(actions map[string][](func() interface{})) map[string][](func() 
 	}
 
 	addAction("routes", func() interface{} {
-		return map[string]func(c *fiber.Ctx) error{
-			"/plugin": func(c *fiber.Ctx) error {
+		return map[string]interface{}{
+			"method": "GET",
+			"path":   "/plugin",
+			"handler": func(c *fiber.Ctx) error {
 				ip := c.IP()
 				return c.SendString(fmt.Sprintf("hello from plugin2 ! IP=%s", ip))
 			},

@@ -4,8 +4,8 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = ["infinity"]
-  bin = "/bin/sleep"
-  cmd = "go build -buildmode=plugin -o ../../build/example-plugin.so ."
+  bin = "/bin/echo DONE && /bin/sleep"
+  cmd = "rm -f ../../build/example-plugin.so && go build -buildmode=plugin -o ../../build/example-plugin.so ."
   delay = 1000
   exclude_dir = ["frontend", "build", "tmp", "vendor", "testdata"]
   exclude_file = []

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
-	"os"
 	"path/filepath"
 	"plugin"
 	"strings"
@@ -17,8 +16,13 @@ import (
 //go:embed static/*
 var staticContent embed.FS
 
+func RemoveIndex[T any](s []T, index int) []T {
+	return append(s[:index], s[index+1:]...)
+}
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		ProxyHeader: fiber.HeaderXForwardedFor,
+	})
 	api := fiber.New()
 	app.Mount("/api", api)
 
@@ -59,22 +63,49 @@ func main() {
 				return err
 			}
 			actions = (*PluginInit)(actions)
+			for action, hooks := range actions {
+				for hookIndex, hook := range hooks {
+					if action == "routes" {
+						routeDefinition := hook().(map[string]interface{})
+						if _, ok := routeDefinition["handler"]; !ok {
+							actions[action] = RemoveIndex(actions[action], hookIndex)
+							continue
+						}
+						if _, ok := routeDefinition["path"]; !ok {
+							routeDefinition["path"] = "/"
+						}
+						if _, ok := routeDefinition["method"]; !ok {
+							routeDefinition["method"] = "GET"
+						}
+						routeDefinition["plugin-prefix"] = info["name"]
+						actions[action][hookIndex] = func() interface{} {
+							return routeDefinition
+						}
+					}
+				}
+			}
 			return nil
 		}
 		return nil
 	})
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		// os.Exit(1)
 	}
 	for action, hooks := range actions {
 		for _, hook := range hooks {
 			if action == "routes" {
-				routes := hook().(map[string]func(c *fiber.Ctx) error)
-				for path, handler := range routes {
-					api.Get(path, handler)
-					fmt.Println("final action hook: ", action, "path", path)
-				}
+				routeDefinition := hook().(map[string]interface{})
+				pluginApp := fiber.New()
+				pluginApp.Add(
+					routeDefinition["method"].(string),
+					routeDefinition["path"].(string),
+					routeDefinition["handler"].(func(c *fiber.Ctx) error),
+				)
+				api.Mount(
+					routeDefinition["plugin-prefix"].(string),
+					pluginApp,
+				)
 			}
 		}
 	}
