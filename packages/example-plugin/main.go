@@ -1,13 +1,16 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"net/http"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 )
 
-// //go:embed static/*
-// var staticContent embed.FS
+//go:embed static/*
+var staticContent embed.FS
 
 func PluginRegister() map[string]string {
 	return map[string]string{
@@ -27,13 +30,21 @@ func PluginInit(actions map[string][](func() interface{})) map[string][](func() 
 	}
 
 	addAction("routes", func() interface{} {
-		return map[string]interface{}{
-			"method": "GET",
-			"path":   "/plugin",
-			"handler": func(c *fiber.Ctx) error {
+		return func(app *fiber.App) {
+			app.Get("/plugin", func(c *fiber.Ctx) error {
 				ip := c.IP()
 				return c.SendString(fmt.Sprintf("hello from plugin2 ! IP=%s", ip))
-			},
+			})
+		}
+	})
+
+	addAction("routes", func() interface{} {
+		return func(app *fiber.App) {
+			app.Use("/", filesystem.New(filesystem.Config{
+				Root:       http.FS(staticContent),
+				PathPrefix: "/static",
+				Browse:     true,
+			}))
 		}
 	})
 	return actions

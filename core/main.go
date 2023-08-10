@@ -66,20 +66,15 @@ func main() {
 			for action, hooks := range actions {
 				for hookIndex, hook := range hooks {
 					if action == "routes" {
-						routeDefinition := hook().(map[string]interface{})
-						if _, ok := routeDefinition["handler"]; !ok {
-							actions[action] = RemoveIndex(actions[action], hookIndex)
-							continue
-						}
-						if _, ok := routeDefinition["path"]; !ok {
-							routeDefinition["path"] = "/"
-						}
-						if _, ok := routeDefinition["method"]; !ok {
-							routeDefinition["method"] = "GET"
-						}
-						routeDefinition["plugin-prefix"] = info["name"]
+						routeHook := hook().(func(app *fiber.App))
 						actions[action][hookIndex] = func() interface{} {
-							return routeDefinition
+							return struct {
+								pluginName string
+								hook       func(app *fiber.App)
+							}{
+								pluginName: info["name"],
+								hook:       routeHook,
+							}
 						}
 					}
 				}
@@ -95,15 +90,14 @@ func main() {
 	for action, hooks := range actions {
 		for _, hook := range hooks {
 			if action == "routes" {
-				routeDefinition := hook().(map[string]interface{})
+				routeHook := hook().(struct {
+					pluginName string
+					hook       func(app *fiber.App)
+				})
 				pluginApp := fiber.New()
-				pluginApp.Add(
-					routeDefinition["method"].(string),
-					routeDefinition["path"].(string),
-					routeDefinition["handler"].(func(c *fiber.Ctx) error),
-				)
+				routeHook.hook(pluginApp)
 				api.Mount(
-					routeDefinition["plugin-prefix"].(string),
+					routeHook.pluginName,
 					pluginApp,
 				)
 			}
