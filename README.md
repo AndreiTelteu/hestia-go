@@ -14,3 +14,18 @@ Things I want to acomplish:
 - make a live logs interface
 - build a mobile app !
 
+Demo:
+```bash
+docker compose up -d
+# this request will be served from the frontend vite dev server
+curl http://localhost:3000/
+# this request will be served from core
+curl http://localhost:3000/api
+# this request will be served from the example-plugin via static filesystem
+curl http://localhost:3000/api/example-plugin/
+# this request will be served from the example-plugin custom api handlers
+curl http://localhost:3000/api/example-plugin/plugin
+```
+
+
+
