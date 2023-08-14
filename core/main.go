@@ -80,7 +80,7 @@ func main() {
 				},
 				RemoveAction: func(name string) {
 					// i don't know how can i do this like in wordpress
-					// in wordpress you use a string with the function name and it works.
+					// in wordpress you use a string with the function name and it works
 				},
 			}
 			(*PluginInit)(sdk)

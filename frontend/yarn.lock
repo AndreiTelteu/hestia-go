@@ -754,6 +754,11 @@ globals@^11.1.0:
   resolved "https://registry.yarnpkg.com/globals/-/globals-11.12.0.tgz#ab8795338868a0babd8525758018c2a7eb95c42e"
   integrity sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==
 
+goober@^2.1.10:
+  version "2.1.13"
+  resolved "https://registry.yarnpkg.com/goober/-/goober-2.1.13.tgz#e3c06d5578486212a76c9eba860cbc3232ff6d7c"
+  integrity sha512-jFj3BQeleOoy7t93E9rZ2de+ScC4lQICLwiAQmKMg9F6roKGaLSHoCDYKkWlSafg138jejvq/mTdvmnwDQgqoQ==
+
 has-flag@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/has-flag/-/has-flag-3.0.0.tgz#b5d454dc2199ae225699f3467e5a07f3b955bafd"
@@ -871,6 +876,31 @@ solid-refresh@^0.5.0:
     "@babel/generator" "^7.21.1"
     "@babel/helper-module-imports" "^7.18.6"
     "@babel/types" "^7.21.2"
+
+solid-styled-components@^0.28.5:
+  version "0.28.5"
+  resolved "https://registry.yarnpkg.com/solid-styled-components/-/solid-styled-components-0.28.5.tgz#ea6ddc6ccf34097392f9dd603dd88d2259d5226e"
+  integrity sha512-vwTcdp76wZNnESIzB6rRZ3U55NgcSAQXCiiRIiEFhxTFqT0bEh/warNT1qaRZu4OkAzrBkViOngF35ktI8sc4A==
+  dependencies:
+    csstype "^3.1.0"
+    goober "^2.1.10"
+
+solidjs-div-100vh@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/solidjs-div-100vh/-/solidjs-div-100vh-1.0.1.tgz#2703690a7280087c8627deaa6252f2c280a10575"
+  integrity sha512-mLhlCKmEABiheV0dIsPsAse3zUwp0stqYoXXGXzWHWCXtZPp/FK396cIzO30F2Id2du/lJcjRMRDhyqbBg3x8A==
+
+solidjs-storex@^1.0.3, solidjs-storex@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/solidjs-storex/-/solidjs-storex-1.0.4.tgz#6ca5fb6e801abab8e3a5b23d95de8c547964d418"
+  integrity sha512-qU3I15HuATfc/13OEsvKuiet0wE9SI/FBR/JUFzitL2g59JEYI7yXzLLvDiP6zGGpp0/nfc0LuwdjhAJ3UijPQ==
+
+solidjs-window-manager@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/solidjs-window-manager/-/solidjs-window-manager-1.1.2.tgz#4b52bea62a7760817f29d02ecb7ad8310f54412c"
+  integrity sha512-8OonERb3DbfHG74REGOSlavZOyMj+PoA7RMhgf2tDxeTA5cJ70QAx1URUZuJ/uj9+/NjkXM6q3HNiNCVpwwpGQ==
+  dependencies:
+    solidjs-storex "^1.0.3"
 
 source-map-js@^1.0.2:
   version "1.0.2"
