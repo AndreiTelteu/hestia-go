@@ -9,6 +9,8 @@ import (
 	"plugin"
 	"strings"
 
+	common "github.com/andreitelteu/hestia-go/common"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 )
@@ -16,9 +18,6 @@ import (
 //go:embed static/*
 var staticContent embed.FS
 
-func RemoveIndex[T any](s []T, index int) []T {
-	return append(s[:index], s[index+1:]...)
-}
 func main() {
 	app := fiber.New(fiber.Config{
 		ProxyHeader: fiber.HeaderXForwardedFor,
@@ -50,35 +49,41 @@ func main() {
 			if err != nil {
 				return err
 			}
-			PluginRegister, err := lookUpSymbol[func() map[string]string](p, "PluginRegister")
+			PluginRegister, err := lookUpSymbol[func() common.PluginInfo](p, "PluginRegister")
 			if err != nil {
 				return err
 			}
 			info := (*PluginRegister)()
-			fmt.Println("Plugin name:", info["name"])
-			fmt.Println("Plugin version:", info["version"])
+			fmt.Println("Plugin name:", info.Name)
+			fmt.Println("Plugin version:", info.Version)
 
-			PluginInit, err := lookUpSymbol[func(map[string][](func() interface{})) map[string][](func() interface{})](p, "PluginInit")
+			PluginInit, err := lookUpSymbol[func(common.PluginSdk)](p, "PluginInit")
 			if err != nil {
 				return err
 			}
-			actions = (*PluginInit)(actions)
-			for action, hooks := range actions {
-				for hookIndex, hook := range hooks {
-					if action == "routes" {
-						routeHook := hook().(func(app *fiber.App))
-						actions[action][hookIndex] = func() interface{} {
-							return struct {
-								pluginName string
-								hook       func(app *fiber.App)
-							}{
-								pluginName: info["name"],
-								hook:       routeHook,
-							}
+			sdk := common.PluginSdk{
+				AddAction: func(name string, callback func(args ...interface{}) interface{}) {
+					action := func() interface{} {
+						return struct {
+							pluginName string
+							hook       func(args ...interface{}) interface{}
+						}{
+							pluginName: info.Name,
+							hook:       callback,
 						}
 					}
-				}
+					if _, ok := actions[name]; !ok {
+						actions[name] = [](func() interface{}){action}
+					} else {
+						actions[name] = append(actions[name], action)
+					}
+				},
+				RemoveAction: func(name string) {
+					// i don't know how can i do this like in wordpress
+					// in wordpress you use a string with the function name and it works.
+				},
 			}
+			(*PluginInit)(sdk)
 			return nil
 		}
 		return nil
@@ -92,7 +97,7 @@ func main() {
 			if action == "routes" {
 				routeHook := hook().(struct {
 					pluginName string
-					hook       func(app *fiber.App)
+					hook       func(args ...interface{}) interface{}
 				})
 				pluginApp := fiber.New()
 				routeHook.hook(pluginApp)

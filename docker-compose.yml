@@ -3,6 +3,9 @@ version: '3.1'
 services:
   nginx:
     image: nginx:latest
+    depends_on:
+      - core
+      - frontend
     ports:
       - 3000:80
     volumes:
@@ -15,6 +18,8 @@ services:
   
   core:
     build: ./core
+    depends_on:
+      - example-plugin
     volumes:
       - ./:/app
   
